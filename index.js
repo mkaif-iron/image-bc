@@ -59,7 +59,7 @@ function buildImagePrompt(userPrompt) {
   return `${core}\n\nAdditional instructions: ${extra}${suffix}`.trim();
 }
 
-app.use(cors({ origin: ['http://localhost:5173', 'http://localhost:3000'] }));
+app.use(cors({ origin: ['http://localhost:5173', 'http://localhost:3000','https://image-frontend-beige.vercel.app'] }));
 app.use(express.json());
 
 app.get('/api/health', (req, res) => {
