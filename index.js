@@ -59,15 +59,39 @@ function buildImagePrompt(userPrompt) {
   return `${core}\n\nAdditional instructions: ${extra}${suffix}`.trim();
 }
 
-const corsOrigins = [
-  'http://localhost:5173',
-  'http://localhost:3000',
-  ...(process.env.CLIENT_ORIGINS || '')
+function isAllowedCorsOrigin(origin) {
+  if (!origin) return true;
+  const extras = (process.env.CLIENT_ORIGINS || '')
     .split(',')
     .map((s) => s.trim())
-    .filter(Boolean),
-];
-app.use(cors({ origin: corsOrigins }));
+    .filter(Boolean);
+  const allow = new Set([
+    'http://localhost:5173',
+    'http://localhost:3000',
+    'https://image-frontend-beige.vercel.app',
+    ...extras,
+  ]);
+  if (allow.has(origin)) return true;
+  try {
+    const u = new URL(origin);
+    if (u.hostname.endsWith('.vercel.app')) return true;
+  } catch {
+    /* ignore */
+  }
+  return false;
+}
+
+app.use(
+  cors({
+    origin(origin, cb) {
+      if (isAllowedCorsOrigin(origin)) {
+        cb(null, true);
+      } else {
+        cb(null, false);
+      }
+    },
+  })
+);
 app.use(express.json());
 
 app.get('/api/health', (req, res) => {
